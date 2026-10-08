@@ -10,14 +10,29 @@
 def min_max(nums: list[float | int]) -> tuple[float | int, float | int]:
     if not nums:
         raise ValueError("Список не должен быть пустым")
-    return min(nums), max(nums)
+    val_min = nums[0]
+    val_max = nums[0]
+    for num in nums:
+        if num < val_min:
+            val_min = num
+        if num > val_max:
+            val_max = num
+    return val_min, val_max
 ```
 
 - `unique_sorted()` Возвращает отсортированный список уникальных значений (по возрастанию).
 
 ```python
 def unique_sorted(nums: list[float | int]) -> list[float | int]:
-    return sorted(list(set(nums)))
+    uniquelist = list(set(nums))
+    n = len(uniquelist)
+    for i in range(n):
+        for j in range(0, n - i -1):
+            if uniquelist[j] > uniquelist[j + 1]:
+
+                uniquelist[j], uniquelist[j + 1] = uniquelist[j + 1], uniquelist[j]
+    
+    return unique_sorted
 ```
 
 - `flatten()` «Расплющивает» список списков/кортежей в один список по строкам (row-major). Если встретился элемент, который не является списком/кортежем — TypeError.
@@ -46,11 +61,18 @@ def flatten(mat: list[list | tuple]) -> list:
 - `transpose()` Меняет строки и столбцы местами. Если матрица «рваная» — ValueError.
 
 ```python
-def transpose(mat: list[list[float | int]]) -> list[list]:
+ddef transpose(mat: list[list[float | int]]) -> list[list]:
     if not mat:
         return []
     check_rectangular(mat)
-    return [list(col) for col in zip(*mat)]
+
+    rows = len(mat)
+    cols = len(mat[0])
+    result = [[0]* rows for _ in range(cols)]
+    for i in range(rows):
+        for j in range(cols):
+            result[j][i] = mat[i][j]
+    return result
 ```
 
 - `row_sums()` Суммирует по каждой строке. Требуется прямоугольность.
@@ -58,9 +80,17 @@ def transpose(mat: list[list[float | int]]) -> list[list]:
 ```python
 def row_sums(mat: list[list[float | int]]) -> list[float]:
     if not mat:
-        return []
+        return[]
     check_rectangular(mat)
-    return [sum(row) for row in mat]
+
+    result = []
+    for row in mat:
+        total = 0
+        for num in row:
+            total += num
+        result.append(total)
+
+    return result
 ```
 
 - `col_sums()` Суммирует по каждому столбцу. Требуется прямоугольность.
@@ -70,7 +100,17 @@ def col_sums(mat: list[list[float | int]]) -> list[float]:
     if not mat:
         return []
     check_rectangular(mat)
-    return [sum(col) for col in zip(*mat)]
+
+    rows = len(mat)
+    cols = len(mat[0])
+    result = []
+
+    for j in range(cols):
+        total = 0
+        for i in range(rows):
+            total += mat[i][j]
+        result.append(total)
+    return result
 ```
 
 #### Тест-кейсы:

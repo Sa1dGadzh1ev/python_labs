@@ -1,11 +1,25 @@
 def min_max(nums: list[float | int]) -> tuple[float | int, float | int]:
     if not nums:
         raise ValueError("Список не должен быть пустым")
-    return min(nums), max(nums)
-
+    val_min = nums[0]
+    val_max = nums[0]
+    for num in nums:
+        if num < val_min:
+            val_min = num
+        if num > val_max:
+            val_max = num
+    return val_min, val_max 
 
 def unique_sorted(nums: list[float | int]) -> list[float | int]:
-    return sorted(list(set(nums)))
+    uniquelist = list(set(nums))
+    n = len(uniquelist)
+    for i in range(n):
+        for j in range(0, n - i -1):
+            if uniquelist[j] > uniquelist[j + 1]:
+
+                uniquelist[j], uniquelist[j + 1] = uniquelist[j + 1], uniquelist[j]
+    
+    return unique_sorted
 
 
 def flatten(mat: list[list | tuple]) -> list:

@@ -11,7 +11,14 @@ def transpose(mat: list[list[float | int]]) -> list[list]:
     if not mat:
         return []
     check_rectangular(mat)
-    return [list(col) for col in zip(*mat)]
+
+    rows = len(mat)
+    cols = len(mat[0])
+    result = [[0]* rows for _ in range(cols)]
+    for i in range(rows):
+        for j in range(cols):
+            result[j][i] = mat[i][j]
+    return result
 
 
 def row_sums(mat: list[list[float | int]]) -> list[float]:
@@ -19,16 +26,31 @@ def row_sums(mat: list[list[float | int]]) -> list[float]:
         return[]
     check_rectangular(mat)
 
-    return[sum(row) for row in mat]
+    result = []
+    for row in mat:
+        total = 0
+        for num in row:
+            total += num
+        result.append(total)
+
+    return result
 
 
 def col_sums(mat: list[list[float | int]]) -> list[float]:
     if not mat:
         return []
     check_rectangular(mat)
-    
-    return [sum(col) for col in zip(*mat)]
 
+    rows = len(mat)
+    cols = len(mat[0])
+    result = []
+
+    for j in range(cols):
+        total = 0
+        for i in range(rows):
+            total += mat[i][j]
+        result.append(total)
+    return result
 
 
 
