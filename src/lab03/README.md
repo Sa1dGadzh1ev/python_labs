@@ -38,7 +38,7 @@ def normalize(text: str, *, casefold: bool = True, yo2e: bool = True) -> str:
         words.append(''.join(current_word))
     
     return ' '.join(words)```
-(../../images/lab03/task01.png)
+1[](../../images/lab03/task01.png)
 ---
 
 ### ФУНКЦИЯ 2: tokenize (Разбиение строки на токены)
@@ -77,7 +77,7 @@ def tokenize(text: str) -> list[str]:
         tokens.append(text[start:i])
 
     return tokens```
-(../../images/lab03/task02.png)
+![](../../images/lab03/task02.png)
 ---
 
 ### ФУНКЦИЯ 3: count_freq (Подсчёт частоты слов)
@@ -138,7 +138,7 @@ def top_n(freq: dict[str, int], n: int = 5) -> list[tuple[str, int]]:
     return result
 ```
 
-(../../images/lab03/task03.png)
+![](../../images/lab03/task03.png)
 ---
 # ЗАДАНИЕ B: РАБОТА СО STDIN И ИНТЕРФЕЙС (Скрипт src/lab03/text_stats.py)
 
@@ -197,7 +197,7 @@ if __name__ == "__main__":
 echo 'Питон — это круто! Питон по-настоящему крут, а ёжик учит питон. Круто!' | python3 src/lab03/text_stats.py
 ```
 
-(../../images/lab03/task05.png)
+![](../../images/lab03/task05.png)
 
 ### Тест №2: Дополнительный табличный формат вывода со звёздочкой (TABLE_MODE = True)
 Константа `TABLE_MODE` переведена в состояние `True`. Программа динамически вычисляет длину самого длинного слова в Топ-5 (`max_word_len`), чтобы задать фиксированную ширину первой колонки. С помощью форматирования f-строк со знаком `<` все слова выравниваются по левому краю, благодаря чему разделительные палочки `|` выстраиваются идеально ровно друг под другом.
@@ -205,4 +205,4 @@ echo 'Питон — это круто! Питон по-настоящему к�
 ```bash
 echo 'Питон — это круто! Питон по-настоящему крут, а ёжик учит питон. Круто!' | python3 src/lab03/text_stats.py
 ```
-(../../images/lab03/task06.png)
+![](../../images/lab03/task06.png)
