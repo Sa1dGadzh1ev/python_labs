@@ -61,7 +61,7 @@ def flatten(mat: list[list | tuple]) -> list:
 - `transpose()` Меняет строки и столбцы местами. Если матрица «рваная» — ValueError.
 
 ```python
-ddef transpose(mat: list[list[float | int]]) -> list[list]:
+def transpose(mat: list[list[float | int]]) -> list[list]:
     if not mat:
         return []
     check_rectangular(mat)
