@@ -6,7 +6,7 @@ def normalize(text: str, *, casefold: bool = True, yo2e: bool = True) -> str:
         if yo2e and char == 'ё':
             cleaned_chars.append('е')
         elif yo2e and char == 'Ё':
-            cleaned_char.append('Е')
+            cleaned_chars.append('Е')
         elif char in ('\t', '\n', '\r'):
             cleaned_chars.append(' ')
         else:
