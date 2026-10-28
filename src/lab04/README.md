@@ -117,7 +117,7 @@ python3 -c "from src.lab04.io_txt_csv import write_csv; write_csv([('кот', 2)
 
 ---
 
-## ЗАДАНИЕ B: ГЕНЕРАЦИЯ ОТЧЁТА text_report.py
+## ЗАДАНИЕ B:
 
 Читаем входной файл через `read_text`. Затем используем функции
 из третьей лабораторной: нормализуем текст через `normalize`,
