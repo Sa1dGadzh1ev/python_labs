@@ -1,188 +1,211 @@
-# ЛР6 — CLI‑утилиты с argparse (cat/grep‑lite + конвертеры): Техническое задание
+# ЛАБОРАТОРНАЯ РАБОТА №6: CLI-УТИЛИТЫ С ARGPARSE
 
-> **Цель:** Научиться создавать консольные инструменты с аргументами командной строки, подкомандами и флагами.  
-> **Связь:** продолжение ЛР5 (работа с JSON/CSV/XLSX) и подготовка к ЛР7 (тестирование).  
-> Основная задача — обернуть существующие функции конвертации и анализа текста в CLI‑оболочки с помощью **argparse**.
+## ЗАПУСК
 
----
-
-## Результат ЛР
-
-- Модуль `src/lab06/cli_text.py` с подкомандами:
-  - `stats --input <txt> [--top 5]` — анализ частот слов в тексте (использовать функции из `lab03`);
-  - `cat --input <path> [-n]` — вывод содержимого файла построчно (с нумерацией при `-n`).
-
-- Модуль `src/lab06/cli_convert.py` с подкомандами:
-  - `json2csv --in data/samples/people.json --out data/out/people.csv`  
-  - `csv2json --in data/samples/people.csv --out data/out/people.json`  
-  - `csv2xlsx --in data/samples/people.csv --out data/out/people.xlsx`  
-  (использовать функции из `lab05`)
-
-- Примеры запуска и скриншоты терминала — в `images/lab06/`.  
-- `README.md` с кратким описанием всех подкоманд и параметров (`--help` и реальные примеры).  
-- **Только стандартная библиотека** (`argparse`, `os`, `pathlib`, `sys` и ранее написанные функции).  
-- Python **3.хх+**.
-
----
-```
-python_labs/
-├─ README.md                       #Общий отчет
-├─ src/                            # здесь — все скрипты по заданиям
-|  ├─ lib/                         # Переиспользуемые модули - хранить здесь
-|  |  └── io_helpers.py            
-|  ├─ lab01
-|  ........
-|  ├─ lab05  
-|  ├─ lab06/                       # Реализация кода
-│  |   ├─ cli_text.py              
-│  |   ├─ cli_convert.py
-│  |   └─ __init__.py
-|  ........
-|  └─ lab10
-├─ data/
-|   ├── samples
-│   └── out
-|
-└─ images/                         # сюда — скриншоты работы программ
-   ├─ lab01
-   ........
-   └─ lab10
-```
----
-
-## Теоретическая часть
-
-### Что такое CLI‑утилита
-**CLI (Command Line Interface)** — интерфейс взаимодействия через консоль.  
-CLI‑программы позволяют вызывать функции программы через команды и флаги, например:
 ```bash
-python -m src.lab06.cli_convert json2csv --in data/samples/people.json --out data/out/people.csv
+python3 -m pip install -r requirements.txt
+python3 -m src.lab06.cli_text --help
+python3 -m src.lab06.cli_convert --help
 ```
 
-### Что такое argparse
-Модуль **argparse** — стандартный инструмент Python для парсинга аргументов командной строки.
+В `cli_text.py` находятся команды `cat` и `stats`.
+В `cli_convert.py` — `json2csv`, `csv2json` и `csv2xlsx`.
 
-**Основные понятия:**
-- `ArgumentParser` — объект, описывающий интерфейс программы;
-- `add_argument()` — добавление параметров (`--input`, `--output`, `-n`, и т.д.);
-- `add_subparsers()` — создание подкоманд (`stats`, `cat`, `json2csv` и др.).
+Используем готовые функции из прошлых лабораторных. Для создания XLSX сохраняем `openpyxl` из ЛР5.
 
-**Минимальный пример:**
-```python
-import argparse
+## ЗАДАНИЕ A: ВЫВОД ФАЙЛА И СТАТИСТИКА СЛОВ
 
-parser = argparse.ArgumentParser(description="Пример CLI")
-parser.add_argument("--name", required=True, help="Имя пользователя")
-args = parser.parse_args()
-print(f"Привет, {args.name}!")
-```
+Через `ArgumentParser` создаём парсер аргументов. Методом `add_subparsers` добавляем выбор подкоманды и делаем его
+обязательным через `required=True`. Название выбранной команды сохраняем в `args.command`.
 
-**Результат запуска:**
+### ФУНКЦИЯ 1: positive_int — проверка параметра --top
+
+Принимаем строку и преобразуем её в целое число через `int`. Если преобразование 
+невозможно, вызываем `ArgumentTypeError` с сообщением «ожидалось целое число».
+
+Отдельно проверяем, что число больше нуля. Ноль и отрицательные значения отклоняем.
+После проверки возвращаем число. Функцию передаём в `type` при добавлении параметра `--top`.
+
+### ФУНКЦИЯ 2: cat_file — вывод содержимого файла
+
+Принимаем путь к файлу и параметр `numbered`. Открываем файл в UTF-8 через `with`, 
+чтобы он автоматически закрылся после чтения. Перебираем файл построчно.
+
+Через `enumerate(file, start=1)` получаем номер и содержимое строки. Если `numbered=True`, 
+сначала выводим номер и табуляцию. Затем печатаем саму строку с `end=""`, чтобы не добавлять лишний
+перевод строки. По умолчанию нумерация выключена.
+
+### ФУНКЦИЯ 3: print_stats — статистика слов
+
+Читаем файл целиком через `read_text`. Затем используем функции из третьей лабораторной: 
+нормализуем текст через `normalize`, выделяем слова через `tokenize` и считаем частоты через `count_freq`.
+
+Через `len(tokens)` получаем общее количество слов, а через `len(frequencies)` — количество уникальных.
+Для вывода самых частых слов вызываем `top_n(frequencies, n=top)`.При одинаковой частоте слова идут по алфавиту.
+
+Количество слов в топе задаём через `--top`. По умолчанию выводим топ-5. Если разных слов меньше,
+выводим только имеющиеся.
+
+### Проверка команды cat
+
+Выводим CSV без нумерации:
+
 ```bash
-$ python hello.py --name Alice
-Привет, Alice!
-```
----
-
-## Примеры кода
-
-### Пример 1. Подкоманды в одном CLI
-```python
-import argparse
-
-def main():
-    parser = argparse.ArgumentParser(description="CLI‑утилиты лабораторной №6")
-    subparsers = parser.add_subparsers(dest="command")
-
-    # подкоманда cat
-    cat_parser = subparsers.add_parser("cat", help="Вывести содержимое файла")
-    cat_parser.add_argument("--input", required=True)
-    cat_parser.add_argument("-n", action="store_true", help="Нумеровать строки")
-
-    # подкоманда stats
-    stats_parser = subparsers.add_parser("stats", help="Частоты слов")
-    stats_parser.add_argument("--input", required=True)
-    stats_parser.add_argument("--top", type=int, default=5)
-
-    args = parser.parse_args()
-
-    if args.command == "cat":
-        """ Реализация команды cat """
-    elif args.command == "stats":
-        """ Реализация команды stats """
+python3 -m src.lab06.cli_text cat --input data/lab06/samples/people.csv
 ```
 
----
+![Вывод файла без нумерацией](../../images/lab06/cat.png)
 
-### Пример 2. CLI‑конвертер
-```python
-import argparse
-from src.lab05.json_csv import json_to_csv, csv_to_json
-from src.lab05.csv_xlsx import csv_to_xlsx
+Для нумерации добавляем флаг `-n`:
 
-def main():
-    parser = argparse.ArgumentParser(description="Конвертеры данных")
-    sub = parser.add_subparsers(dest="cmd")
-
-    p1 = sub.add_parser("json2csv")
-    p1.add_argument("--in", dest="input", required=True)
-    p1.add_argument("--out", dest="output", required=True)
-
-    p2 = sub.add_parser("csv2json")
-    p2.add_argument("--in", dest="input", required=True)
-    p2.add_argument("--out", dest="output", required=True)
-
-    p3 = sub.add_parser("csv2xlsx")
-    p3.add_argument("--in", dest="input", required=True)
-    p3.add_argument("--out", dest="output", required=True)
-
-    args = parser.parse_args()
-
-    """
-        Вызываем код в зависимости от аргументов.
-    """
+```bash
+python3 -m src.lab06.cli_text cat --input data/lab06/samples/people.csv -n
 ```
 
----
+Получаем строки с номерами, начиная с 1:
 
-## Проверка и демонстрация
+![Вывод файла с нумерацией](../../images/lab06/catn.png)
 
-**Файлы для демонстрации:**
-- Использовать данные из `data/samples/` из ЛР5.  
-- Результаты сохраняются в `data/out/`.
+### Проверка команды stats
 
-**Сценарии проверки (описать в README):**
-1. `cat --input data/samples/people.csv -n` → вывод строк с номерами.  
-2. `stats --input data/samples/people.txt --top 5` → вывод топ‑слов.  
-3. `json2csv`, `csv2json`, `csv2xlsx` — корректная конвертация без ошибок.  
-4. Проверка `--help` для каждой подкоманды.
+Запускаем программу:
 
----
+```bash
+python3 -m src.lab06.cli_text stats --input data/lab06/samples/people.txt --top 5
+```
 
-## Валидация и обработка ошибок
-- Отсутствие входного файла → `FileNotFoundError`.  
-- Неверные аргументы → вывод `parser.error(...)`.  
-- Все сообщения — понятные, человекочитаемые.  
-- Вывод справки (`--help`) должен работать без ошибок.  
-- Код не должен зависеть от внешних библиотек.
+Получаем:
 
----
+![Статистика слов](../../images/lab06/stats.png)
 
-## Что сдавать
-1. Код в `src/lab06/*`  
-2. Файлы демонстрации в `data/out/`  
-3. `README.md` с командами запуска и примерами вывода (скриншоты) 
-4. Скриншоты в `images/lab06/`
+## ЗАДАНИЕ B: CLI ДЛЯ КОНВЕРТЕРОВ
 
----
+В словаре `converters` связываем название каждой подкоманд с функцией ЛР5 и описанием для справки. 
+В цикле добавляем обязательные параметры `--in` и `--out`. Через `dest` сохраняем пути в `args.input` и `args.output`.
+Для каждой подкоманды вызываем `set_defaults(handler=function)`. После разбора аргументов 
+запускаем выбранный конвертер через `args.handler(args.input, args.output)`.
+Результаты сохраняем в `data/lab06/out`, отдельно от прошлых работ. Папка создаётся автоматически функциями конвертации.
+Существующий выходной файл при повторном запуске перезаписывается.
 
-## Критерии допуска
-- Лабораторная работа **выполнена на 100%**
-- Оформлен отчет в README-файле по примеру **effective-broccoli**
+### JSON → CSV
 
-## Критерии приёмки
-- Корректность работы всех CLI‑команд — **20%**  
-- Наличие справки (`--help`) и ошибок — **20%**  
-- Ответы на вопросы по теории (argparse, CLI, структура) — **60%** 
+Вызываем `json_to_csv` из ЛР5 через подкоманду `json2csv`:
 
+```bash
+python3 -m src.lab06.cli_convert json2csv --in data/lab06/samples/people.json --out data/lab06/out/people_from_json.csv
+```
 
+В `people_from_json.csv` проверяем заголовок и количество строк данных.
+
+![Результат JSON → CSV](../../images/lab06/jc.png)
+
+### CSV → JSON
+
+Вызываем `csv_to_json` через подкоманду `csv2json`:
+
+```bash
+python3 -m src.lab06.cli_convert csv2json --in data/lab06/samples/people.csv --out data/lab06/out/people_from_csv.json
+```
+
+В `people_from_csv.json` проверяем ключи и количество объектов.
+Все значения сохраняются строками, как в реализации ЛР5.
+
+![Результат CSV → JSON](../../images/lab06/cj.png)
+
+### CSV → XLSX
+
+Вызываем `csv_to_xlsx` через подкоманду `csv2xlsx`:
+
+```bash
+python3 -m src.lab06.cli_convert csv2xlsx --in data/lab06/samples/people.csv --out data/lab06/out/people.xlsx
+```
+
+Открываем `people.xlsx` в Excel или LibreOffice. Проверяем данные, лист 
+`Sheet1` и ширины колонок. Ячейки сохраняются как текст, используется `openpyxl`.
+
+![Таблица people.xlsx](../../images/lab06/xlsx.png)
+
+## СПРАВКА
+
+Для каждой подкоманды проверяем `--help`:
+
+```bash
+python3 -m src.lab06.cli_text cat --help
+python3 -m src.lab06.cli_text stats --help
+python3 -m src.lab06.cli_convert json2csv --help
+python3 -m src.lab06.cli_convert csv2json --help
+python3 -m src.lab06.cli_convert csv2xlsx --help
+```
+
+Справка создаётся автоматически средствами `argparse`.
+В ней выводятся параметры и их описания.
+Входной файл для вывода справки не требуется.
+
+![Справка подкоманд](../../images/lab06/help1.png)
+![Справка подкоманд](../../images/lab06/help2.png)
+![Справка подкоманд](../../images/lab06/help3.png)
+![Справка подкоманд](../../images/lab06/help4.png)
+![Справка подкоманд](../../images/lab06/help5.png)
+
+## КРАЕВЫЕ СЛУЧАИ
+
+### Тест №1: Отсутствующий файл
+
+Передаём путь к файлу, которого нет:
+
+```bash
+python3 -m src.lab06.cli_text cat --input missing.txt
+```
+
+При чтении возникает `FileNotFoundError`. Перехватываем его и 
+вызываем `parser.error` с сообщением «Входной файл не найден».
+
+![Ошибка при отсутствии файла](../../images/lab06/missing.png)
+
+### Тест №2: Неправильное значение --top
+
+Передаём ноль:
+
+```bash
+python3 -m src.lab06.cli_text stats --input data/lab06/samples/people.txt --top 0
+```
+
+Получаем сообщение «число должно быть больше нуля».
+Для нечислового значения получаем «ожидалось целое число».
+
+![Ошибка параметра --top](../../images/lab06/top.png)
+
+### Тест №3: Отсутствующий обязательный параметр
+
+Запускаем конвертер без `--out`:
+
+```bash
+python3 -m src.lab06.cli_convert csv2json --in data/lab06/samples/people.csv
+```
+
+`argparse` сообщает, что параметр `--out` обязателен.
+Функция конвертации не вызывается.
+
+![Ошибка при отсутствии --out](../../images/lab06/required.png)
+
+### Тест №4: Одинаковые пути
+
+Указываем один и тот же путь для входа и выхода:
+
+```bash
+python3 -m src.lab06.cli_convert csv2json --in data/lab06/samples/people.csv --out data/lab06/samples/people.csv
+```
+
+Перед вызовом конвертера сравниваем пути через `resolve`. Если они совпадают, выводим сообщение
+«Входной и выходной пути должны различаться». Конвертацию не выполняем.
+
+![Ошибка при одинаковых путях](../../images/lab06/same.png)
+
+## ФОРМАТЫ И ПРОВЕРКИ
+
+- Кодировка текстовых файлов — UTF-8, разделитель CSV — запятая; пути в примерах относительные.
+- Подкоманда и входной путь обязательны. Для конвертеров также обязателен выходной путь.
+- Параметр `--top` принимает только целые числа больше нуля; по умолчанию — 5.
+- Ошибки аргументов обрабатывает `argparse`. Ошибки чтения, кодировки и данных перехватываем через `try/except` и выводим через `parser.error`.
+- При ошибке сообщение идёт в stderr, код завершения — 2. При успешном выполнении и выводе справки — 0.
+- Проверки JSON, CSV и XLSX выполняются существующими функциями ЛР5. Исходные типы значений при преобразовании CSV → JSON не восстанавливаются.
